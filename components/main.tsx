@@ -1,5 +1,8 @@
 "use client"
 
+import Image from "next/image";
+import { useState, useEffect } from "react";
+
 type AnimalCard = {
     image: string;
     description: string;
@@ -64,7 +67,7 @@ function generateAnimalCard(): AnimalCard {
     };
 }
 
-import { useState, useEffect } from "react";
+
 
 export default function Main() {
 
@@ -91,8 +94,12 @@ export default function Main() {
             if (!data.image) throw new Error('No image returned');
             // Only update the image property, keep the rest of the card
             setSelectedCard(card => card ? { ...card, image: data.image } : null);
-        } catch (err: any) {
-            setError(err.message || 'Unknown error occurred');
+        } catch (err: unknown) {    
+            if (err instanceof Error) {
+                setError(err.message);
+            } else {
+                setError('Unknown error occurred');
+            }
         }
     };
 
@@ -130,7 +137,9 @@ export default function Main() {
                         <div
                             className={`absolute top-0 left-0 size-full rounded-full z-0 animate-pulse-grow transition-colors duration-500 ${guesses === 5 ? endColor : 'bg-gray-300'}`}
                         ></div>
-                        <img
+                        <Image
+                            width={384}
+                            height={384}
                             src={selectedCard.image}
                             alt={selectedCard.description}
                             className={`w-full h-full object-cover rounded-full absolute top-0 left-0 z-10 ${guesses === 5 ? 'opacity-100 transition-opacity duration-500 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
