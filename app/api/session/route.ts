@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
 // You can replace this with your own instructions or import from elsewhere
 const DEFAULT_INSTRUCTIONS = `You are a guessing game for children. 
