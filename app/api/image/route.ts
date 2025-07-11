@@ -8,7 +8,6 @@ const openai = new OpenAI({
 export async function GET(req: NextRequest) {
   const description = req.nextUrl.searchParams.get('description') || '';
   try {
-    console.log('Generating image for:', description);
     const result = await openai.images.generate({
       model: 'dall-e-2',
       prompt: description + ', center focus, high energy, japanese animation style',
