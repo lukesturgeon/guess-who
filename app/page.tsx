@@ -89,24 +89,24 @@ export default function Page() {
     <div className="min-h-screen flex flex-col items-center justify-center">
       <audio ref={audioRef} />
       {animalCardError && (
-        <div className="font-serif my-12 text-red-500 text-center">{animalCardError}</div>
+        <div className="my-12 text-red-500 text-center">{animalCardError}</div>
       )}
       {webRTCError && (
-        <div className="font-serif my-12 text-red-500 text-center">{webRTCError}</div>
+        <div className="my-12 text-red-500 text-center">{webRTCError}</div>
       )}
       {selectedCard ? (
         <>
-          <div className="size-96 relative rounded-full overflow-hidden">
+          <div className="w-[512px] h-[512px] relative rounded-full overflow-hidden">
             <div
-              className={`absolute top-0 left-0 size-full rounded-full z-0 transition-colors duration-500 pointer-events-none ${endColor ?? 'bg-gray-300'}`}
+              className={`absolute top-0 left-0 size-full rounded-full z-0 transition-colors duration-500 pointer-events-none ${endColor ?? 'bg-purple-300'}`}
               style={{
                 transform: `scale(${voiceScale})`
               }}
             ></div>
             {selectedCard.image && (
               <Image
-                width={384}
-                height={384}
+                width={512}
+                height={512}
                 src={selectedCard.image}
                 alt={selectedCard.description}
                 style={{
@@ -118,13 +118,13 @@ export default function Page() {
               />
             )}
           </div>
-          <div className="font-serif text-center">
-            <p className="font-serif text-3xl my-12">{showAnimalCard ? selectedCard.description : "Guess the animal!"}</p>
+          <div className="text-center">
+            <p className="text-3xl mt-6">{showAnimalCard ? selectedCard.description : "Guess the animal!"}</p>
             <p className="text-lg my-4">{guesses}/5 Guesses</p>
 
             {!isConnected && (
               <button
-                className="bg-gray-100 px-4 py-2 rounded mt-4"
+                className="bg-gray-100 px-4 py-2 rounded mt-2"
                 onClick={handleStart}
               >
                 Play again
@@ -133,7 +133,7 @@ export default function Page() {
 
             {isConnected && (
               <button
-                className="bg-gray-100 px-4 py-2 rounded mt-4"
+                className="bg-gray-100 px-4 py-2 rounded mt-2"
                 onClick={handleStop}
               >
                 Stop
@@ -142,8 +142,8 @@ export default function Page() {
           </div>
         </>
       ) : (
-        <div className="size-96 flex items-center justify-center rounded-full bg-gray-300 animate-pulse" onClick={handleStart}>
-          <span className="text-xl font-serif" >Start</span>
+        <div className="w-[512px] h-[512px] flex items-center justify-center rounded-full bg-purple-300 animate-pulse cursor-pointer" onClick={handleStart}>
+          <span className="text-3xl">Start</span>
         </div>
       )}
     </div>
