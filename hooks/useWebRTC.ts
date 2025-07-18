@@ -1,6 +1,9 @@
 import { useRef, useState, useCallback } from "react";
 
-export function useWebRTC(fns: Record<string, (args: any) => any>, audioRef: React.RefObject<HTMLAudioElement | null>) {
+export function useWebRTC(
+  tools: Record<string, { fn: (args: any) => any; description: string; parameters?: object }>,
+  audioRef: React.RefObject<HTMLAudioElement | null>
+) {
   const [error, setError] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
@@ -13,44 +16,25 @@ export function useWebRTC(fns: Record<string, (args: any) => any>, audioRef: Rea
       type: 'session.update',
       session: {
         modalities: ['text', 'audio'],
-        tools: [
-          {
-            type: 'function',
-            name: 'changeBackgroundColor',
-            description: 'Changes the background color of a web page',
-            parameters: {
-              type: 'object',
-              properties: { color: { type: 'string', description: 'A hex value of the color' } },
-            },
-          },
-          {
-            type: 'function',
-            name: 'changeTextColor',
-            description: 'Changes the text color of a web page',
-            parameters: {
-              type: 'object',
-              properties: { color: { type: 'string', description: 'A hex value of the color' } },
-            },
-          },
-          {
-            type: 'function',
-            name: 'getPageHTML',
-            description: 'Gets the HTML for the current page',
-          },
-        ],
+        tools: Object.entries(tools).map(([name, { description, parameters }]) => ({
+          type: 'function',
+          name,
+          description,
+          ...(parameters ? { parameters } : {}),
+        })),
       },
     };
     dataChannelRef.current?.send(JSON.stringify(event));
     dataChannelRef.current?.send(JSON.stringify({ type: "response.create" }));
-  }, []);
+  }, [tools]);
 
   const handleDataChannelMessage = useCallback(async (ev: MessageEvent) => {
     const msg = JSON.parse(ev.data);
     if (msg.type === 'response.function_call_arguments.done') {
-      const fn = fns[msg.name as keyof typeof fns];
-      if (fn !== undefined) {
+      const tool = tools[msg.name as keyof typeof tools];
+      if (tool && typeof tool.fn === 'function') {
         const args = JSON.parse(msg.arguments);
-        const result = await fn(args);
+        const result = await tool.fn(args);
         const event = {
           type: 'conversation.item.create',
           item: {
@@ -63,9 +47,9 @@ export function useWebRTC(fns: Record<string, (args: any) => any>, audioRef: Rea
         dataChannelRef.current?.send(JSON.stringify({ type: "response.create" }));
       }
     }
-  }, [fns]);
+  }, [tools]);
 
-  const startWebRTCConnection = useCallback(async () => {
+  const startWebRTCConnection = useCallback(async (description: string) => {
     if (isConnected) return;
     peerConnectionRef.current = new RTCPeerConnection();
 
@@ -90,8 +74,9 @@ export function useWebRTC(fns: Record<string, (args: any) => any>, audioRef: Rea
         await peerConnectionRef.current.setLocalDescription(offer);
 
         const tokenResponse = await fetch('/api/session', {
-          method: 'GET',
+          method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ description }),
         });
         const data = await tokenResponse.json();
         const EPHEMERAL_KEY = data.result.client_secret.value;

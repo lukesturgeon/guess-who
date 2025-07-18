@@ -9,11 +9,15 @@ export async function GET(req: NextRequest) {
   const description = req.nextUrl.searchParams.get('description') || '';
   try {
     const result = await openai.images.generate({
-      model: 'dall-e-2',
-      prompt: description + ', center focus, high energy, japanese animation style',
+      model: 'dall-e-3',
+      prompt: `Generate a photorealistic image of a ${description}. 
+      Place the animal in the center of the image.
+      Exagerate the expressions of the animal, but ensure it is still photorealistic. `,
       n: 1,
       size: '1024x1024',
+      response_format: 'url',
     });
+
     if (result.data && Array.isArray(result.data) && result.data.length > 0 && result.data[0].url ) {
       const image = result.data[0].url;
       return NextResponse.json({ image });

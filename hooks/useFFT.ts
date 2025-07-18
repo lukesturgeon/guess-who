@@ -29,7 +29,7 @@ export function useFFT(
       const min = options?.min ?? 20;
       const max = options?.max ?? 160;
       const minScale = options?.minScale ?? 1.0;
-      const maxScale = options?.maxScale ?? 1.2;
+      const maxScale = options?.maxScale ?? 1.3;
       let mapped = minScale + (maxScale - minScale) * Math.max(0, Math.min(1, (avg - min) / (max - min)));
       setScale(mapped);
       animationId = requestAnimationFrame(update);

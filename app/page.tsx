@@ -12,50 +12,69 @@ export default function Page() {
   const audioRef = useRef<HTMLAudioElement>(null);
 
   // Use FFT hook for voice indicator scaling
-  const voiceScale = useFFT(audioRef);
+  const voiceScale = useFFT(audioRef, { minScale: 1.1, maxScale: 1.4 });
 
   // WebRTC & AI Chat
-  const fns = {
-    getPageHTML: () => {
-      return { success: true, html: document.documentElement.outerHTML };
+  const tools = {
+    increaseGuessCount: {
+      fn: () => {
+        setGuesses((prev) => prev + 1);
+        setBlurAmount((prev) => Math.max(prev - BLUR_STEP, MIN_BLUR));
+        return { guesses: guesses + 1 };
+      },
+      description: "Increases the guess count by 1, and returns the total number of guesses so far.",
     },
-    changeBackgroundColor: ({ color }: { color: string }) => {
-      document.body.style.backgroundColor = color;
-      return { success: true, color };
+    endGame: {
+      fn: ({ success }: { success: boolean }) => {       
+        setEndColor(success ? 'bg-lime-300' : 'bg-rose-300');
+        setShowAnimalCard(true);
+        setBlurAmount(MIN_BLUR);
+        setTimeout(() => {
+          stopWebRTCConnection();
+        }, 6000);
+        return { success: success };
+      },
+      description: "Ends the game and reveals the correct answer on screen.",
+      parameters: {
+        type: "object",
+        properties: { success: { type: "boolean", description: "Whether the child guessed correctly or not" } },
+      },
     },
-    changeTextColor: ({ color }: { color: string }) => {
-      document.body.style.color = color;
-      return { success: true, color };
-    },
+  };
+  const { isConnected, error: webRTCError, startWebRTCConnection, stopWebRTCConnection } = useWebRTC(tools, audioRef);
 
-  }
-  const { isConnected, error: webRTCError, startWebRTCConnection, stopWebRTCConnection } = useWebRTC(fns, audioRef);
-
+  // Blur logic
+  const INITIAL_BLUR = 20;
+  const BLUR_STEP = 4;
+  const MIN_BLUR = 0;
+  const [blurAmount, setBlurAmount] = useState<number>(INITIAL_BLUR);
 
   // Game Logic
   const [guesses, setGuesses] = useState(0);
+  const [showAnimalCard, setShowAnimalCard] = useState(false);
   const [endColor, setEndColor] = useState<string | null>(null);
   const { selectedCard, error: animalCardError, generateCardWithImage } = useAnimalCard();
 
-  const handleStart = () => {
+  // Image load animation
+  const [imageLoaded, setImageLoaded] = useState(false);
+  useEffect(() => {
+    setImageLoaded(false);
+  }, [selectedCard?.image]);
+
+  const handleStart = async () => {
     setGuesses(0);
     setEndColor(null);
-    generateCardWithImage();
-    startWebRTCConnection();
+    setShowAnimalCard(false);
+    setBlurAmount(INITIAL_BLUR);
+    const card = generateCardWithImage();
+    startWebRTCConnection(card.description);
   };
 
   const handleStop = () => {
+    setShowAnimalCard(true);
+    setEndColor('bg-rose-300');
+    setBlurAmount(MIN_BLUR);
     stopWebRTCConnection();
-  };
-
-  const handleGuess = () => {
-    if (guesses < 5) {
-      const next = guesses + 1;
-      setGuesses(next);
-      if (next === 5) {
-        setEndColor(Math.random() < 0.5 ? 'bg-rose-300' : 'bg-lime-300');
-      }
-    }
   };
 
   useEffect(() => {
@@ -77,23 +96,30 @@ export default function Page() {
       )}
       {selectedCard ? (
         <>
-          <div className="size-96 relative rounded-full">
+          <div className="size-96 relative rounded-full overflow-hidden">
             <div
-              className={`absolute top-0 left-0 size-full rounded-full z-0 transition-colors duration-500 bg-gray-300 pointer-events-none`}
+              className={`absolute top-0 left-0 size-full rounded-full z-0 transition-colors duration-500 pointer-events-none ${endColor ?? 'bg-gray-300'}`}
               style={{
                 transform: `scale(${voiceScale})`
               }}
             ></div>
-            <Image
-              width={384}
-              height={384}
-              src={selectedCard.image}
-              alt={selectedCard.description}
-              className={`w-full h-full object-cover rounded-full absolute top-0 left-0 z-10 ${guesses === 5 ? 'opacity-100 transition-opacity duration-500 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
-            />
+            {selectedCard.image && (
+              <Image
+                width={384}
+                height={384}
+                src={selectedCard.image}
+                alt={selectedCard.description}
+                style={{
+                  filter: `blur(${showAnimalCard ? 0 : blurAmount}px)`,
+                  opacity: imageLoaded ? 1 : 0
+                }}
+                className="w-full h-full object-cover rounded-full absolute top-0 left-0 z-10 duration-500 transition-all"
+                onLoadingComplete={() => setImageLoaded(true)}
+              />
+            )}
           </div>
           <div className="font-serif text-center">
-            <p className="font-serif text-3xl my-12">{guesses === 5 ? selectedCard.description : "Guess who?"}</p>
+            <p className="font-serif text-3xl my-12">{showAnimalCard ? selectedCard.description : "Guess the animal!"}</p>
             <p className="text-lg my-4">{guesses}/5 Guesses</p>
 
             {!isConnected && (
