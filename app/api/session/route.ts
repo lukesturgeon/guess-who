@@ -15,7 +15,6 @@ export async function POST(req: Request) {
   const instructions = `You are a guessing game for children.
   You know the animal and activity, the children do not.
   The animal and activity for this round is: ${description}.
-  You start the game by asking if the child wants a clue.
   The children will ask you questions about the animal and activity. 
   Each time the child guesses call the 'increaseGuessCount' tool.
   The child can only guess 5 times, then the game ends.
@@ -31,11 +30,14 @@ export async function POST(req: Request) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: "gpt-4o-realtime-preview-2024-12-17",
+      model: "gpt-4o-mini-realtime-preview-2024-12-17",
       instructions,
       voice: "ballad",
     }),
   });
+
+  // gpt-4o-mini-realtime-preview-2024-12-17
+  // gpt-4o-realtime-preview-2024-12-17
 
   const result = await response.json();
   return NextResponse.json({ result });

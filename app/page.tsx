@@ -86,7 +86,7 @@ export default function Page() {
 
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-white">
       <audio ref={audioRef} />
       {animalCardError && (
         <div className="my-12 text-red-500 text-center">{animalCardError}</div>
@@ -98,7 +98,7 @@ export default function Page() {
         <>
           <div className="w-[512px] h-[512px] relative rounded-full overflow-hidden">
             <div
-              className={`absolute top-0 left-0 size-full rounded-full z-0 transition-colors duration-500 pointer-events-none ${endColor ?? 'bg-purple-300'}`}
+              className={`absolute top-0 left-0 size-full rounded-full z-0 transition-colors duration-500 pointer-events-none ${endColor ?? 'bg-orange-500'}`}
               style={{
                 transform: `scale(${voiceScale})`
               }}
@@ -119,12 +119,12 @@ export default function Page() {
             )}
           </div>
           <div className="text-center">
-            <p className="text-3xl mt-6">{showAnimalCard ? selectedCard.description : "Guess the animal!"}</p>
-            <p className="text-lg my-4">{guesses}/5 Guesses</p>
+            <p className="text-3xl mt-6 text-orange-500">{showAnimalCard ? selectedCard.description : "Guess the animal!"}</p>
+            <p className="text-lg my-4 text-orange-500">{guesses}/5 Guesses</p>
 
             {!isConnected && (
               <button
-                className="bg-gray-100 px-4 py-2 rounded mt-2"
+                className="bg-amber-200 px-4 py-2 rounded-full mt-2 text-orange-500"
                 onClick={handleStart}
               >
                 Play again
@@ -133,7 +133,7 @@ export default function Page() {
 
             {isConnected && (
               <button
-                className="bg-gray-100 px-4 py-2 rounded mt-2"
+                className="bg-amber-200 px-4 py-2 rounded-full mt-2 text-orange-500"
                 onClick={handleStop}
               >
                 Stop
@@ -142,8 +142,8 @@ export default function Page() {
           </div>
         </>
       ) : (
-        <div className="w-[512px] h-[512px] flex items-center justify-center rounded-full bg-purple-300 animate-pulse cursor-pointer" onClick={handleStart}>
-          <span className="text-3xl">Start</span>
+        <div className="w-[512px] h-[512px] flex items-center justify-center rounded-full bg-orange-500 animate-pulse cursor-pointer" onClick={handleStart}>
+          <span className="text-3xl text-white">Start</span>
         </div>
       )}
     </div>
