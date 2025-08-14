@@ -12,7 +12,7 @@ export default function Page() {
   const audioRef = useRef<HTMLAudioElement>(null);
 
   // Use FFT hook for voice indicator scaling
-  const voiceScale = useFFT(audioRef, { minScale: 1.1, maxScale: 1.4 });
+  const voiceScale = useFFT(audioRef, { minScale: 1.0, maxScale: 1.3 });
 
   // WebRTC & AI Chat
   const tools = {
@@ -26,7 +26,6 @@ export default function Page() {
     },
     endGame: {
       fn: ({ success }: { success: boolean }) => {       
-        setEndColor(success ? 'bg-lime-300' : 'bg-rose-300');
         setShowAnimalCard(true);
         setBlurAmount(MIN_BLUR);
         setTimeout(() => {
@@ -52,7 +51,6 @@ export default function Page() {
   // Game Logic
   const [guesses, setGuesses] = useState(0);
   const [showAnimalCard, setShowAnimalCard] = useState(false);
-  const [endColor, setEndColor] = useState<string | null>(null);
   const { selectedCard, error: animalCardError, generateCardWithImage } = useAnimalCard();
 
   // Image load animation
@@ -63,7 +61,6 @@ export default function Page() {
 
   const handleStart = async () => {
     setGuesses(0);
-    setEndColor(null);
     setShowAnimalCard(false);
     setBlurAmount(INITIAL_BLUR);
     const card = generateCardWithImage();
@@ -72,7 +69,6 @@ export default function Page() {
 
   const handleStop = () => {
     setShowAnimalCard(true);
-    setEndColor('bg-rose-300');
     setBlurAmount(MIN_BLUR);
     stopWebRTCConnection();
   };
@@ -86,7 +82,7 @@ export default function Page() {
 
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-white">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-white p-12">
       <audio ref={audioRef} />
       {animalCardError && (
         <div className="my-12 text-red-500 text-center">{animalCardError}</div>
@@ -96,9 +92,9 @@ export default function Page() {
       )}
       {selectedCard ? (
         <>
-          <div className="w-[512px] h-[512px] relative rounded-full overflow-hidden">
+          <div className="w-[512px] h-[512px] relative rounded-full">
             <div
-              className={`absolute top-0 left-0 size-full rounded-full z-0 transition-colors duration-500 pointer-events-none ${endColor ?? 'bg-orange-500'}`}
+              className={`absolute top-0 left-0 size-full rounded-full z-0 transition-colors duration-500 pointer-events-none bg-orange-500`}
               style={{
                 transform: `scale(${voiceScale})`
               }}
@@ -114,7 +110,7 @@ export default function Page() {
                   opacity: imageLoaded ? 1 : 0
                 }}
                 className="w-full h-full object-cover rounded-full absolute top-0 left-0 z-10 duration-500 transition-all"
-                onLoadingComplete={() => setImageLoaded(true)}
+                onLoad={() => setImageLoaded(true)}
               />
             )}
           </div>

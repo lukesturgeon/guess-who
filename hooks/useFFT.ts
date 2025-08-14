@@ -13,11 +13,21 @@ export function useFFT(
   const [scale, setScale] = useState(1.0);
 
   useEffect(() => {
-    if (!audioRef.current) return;
     let audioCtx: AudioContext | null = null;
     let analyser: AnalyserNode | null = null;
     let source: MediaStreamAudioSourceNode | null = null;
     let animationId: number;
+    let lastStream: MediaStream | null = null;
+    let pollInterval: NodeJS.Timeout;
+
+    const cleanup = () => {
+      if (animationId) cancelAnimationFrame(animationId);
+      if (audioCtx) audioCtx.close();
+      analyser = null;
+      source = null;
+      audioCtx = null;
+      setScale(1.0);
+    };
 
     const update = () => {
       if (!analyser) return;
@@ -35,10 +45,8 @@ export function useFFT(
       animationId = requestAnimationFrame(update);
     };
 
-    const setup = () => {
-      if (!audioRef.current) return;
-      const stream = audioRef.current.srcObject as MediaStream;
-      if (!stream) return;
+    const setup = (stream: MediaStream) => {
+      cleanup();
       audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
       analyser = audioCtx.createAnalyser();
       analyser.fftSize = 256;
@@ -47,22 +55,21 @@ export function useFFT(
       update();
     };
 
-    // Wait for audio to be playing and srcObject to be set
-    const checkReady = setInterval(() => {
-      if (audioRef.current && audioRef.current.srcObject) {
-        clearInterval(checkReady);
-        setup();
+    pollInterval = setInterval(() => {
+      const stream = audioRef.current?.srcObject as MediaStream | null;
+      if (stream !== lastStream) {
+        lastStream = stream;
+        if (stream) {
+          setup(stream);
+        } else {
+          cleanup();
+        }
       }
     }, 200);
 
     return () => {
-      if (animationId) cancelAnimationFrame(animationId);
-      if (audioCtx) audioCtx.close();
-      analyser = null;
-      source = null;
-      audioCtx = null;
-      setScale(1.0);
-      clearInterval(checkReady);
+      clearInterval(pollInterval);
+      cleanup();
     };
   }, [audioRef, options?.min, options?.max, options?.minScale, options?.maxScale]);
 

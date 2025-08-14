@@ -1,6 +1,7 @@
 import { useRef, useState, useCallback } from "react";
 
 export function useWebRTC(
+
   tools: Record<string, { fn: (args: any) => any; description: string; parameters?: object }>,
   audioRef: React.RefObject<HTMLAudioElement | null>
 ) {
@@ -113,8 +114,10 @@ export function useWebRTC(
       peerConnectionRef.current.close();
       peerConnectionRef.current = null;
     }
+    
     setIsConnected(false);
   }, [handleDataChannelOpen, handleDataChannelMessage]);
+
 
   return {
     isConnected,
