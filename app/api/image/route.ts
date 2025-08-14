@@ -8,6 +8,24 @@ const openai = new OpenAI({
 
 export async function GET(req: NextRequest) {
   const description = req.nextUrl.searchParams.get('description')?.toLowerCase().trim() || '';
+  
+  // Create a consistent filename based on description only (for caching)
+  const cacheKey = `${description.replace(/[^a-zA-Z0-9]/g, '_')}`;
+  
+  // Try to get cached image first
+  try {
+    const store = getStore('generated-images');
+    const cachedImage = await store.get(cacheKey, { type: 'text' });
+    
+    if (cachedImage) {
+      console.log('Returning cached image from Netlify Blobs');
+      const dataUrl = `data:image/png;base64,${cachedImage}`;
+      return NextResponse.json({ image: dataUrl });
+    }
+  } catch (cacheError) {
+    console.log('Cache miss or Netlify Blobs not available, generating new image:', String(cacheError));
+  }
+  
   try {
     const result = await openai.images.generate({
       model: 'gpt-image-1',
@@ -22,34 +40,28 @@ export async function GET(req: NextRequest) {
     if (result.data && Array.isArray(result.data) && result.data.length > 0 && result.data[0].b64_json) {
       const base64Data = result.data[0].b64_json;
       
-      // Create a unique filename based on description
-      const filename = `${description.replace(/[^a-zA-Z0-9]/g, '_')}_${Date.now()}.png`;
-      
-      // Upload to Netlify Blobs
+      // Try to store in Netlify Blobs for future caching, but always return data URL
       try {
         const store = getStore('generated-images');
-        await store.set(filename, base64Data, {
+        await store.set(cacheKey, base64Data, {
           metadata: {
             description: description,
             createdAt: new Date().toISOString()
           }
         });
-        
-        // Construct the public URL for the blob
-        const siteUrl = process.env.URL || process.env.DEPLOY_PRIME_URL || 'https://localhost:3000';
-        const blobUrl = `${siteUrl}/.netlify/blobs/serve/store/generated-images/${filename}`;
-        return NextResponse.json({ image: blobUrl });
+        console.log('Image stored in Netlify Blobs for caching');
       } catch (blobError) {
-        // Fallback for local development - return base64 data URL
-        console.warn('Netlify Blobs not available, using data URL fallback:', blobError);
-        const dataUrl = `data:image/png;base64,${base64Data}`;
-        return NextResponse.json({ image: dataUrl });
+        console.warn('Netlify Blobs not available, skipping cache:', blobError);
       }
+      
+      // Always return data URL (works everywhere)
+      const dataUrl = `data:image/png;base64,${base64Data}`;
+      return NextResponse.json({ image: dataUrl });
     } else {
       throw new Error('Failed to generate image');
     }
   } catch (error) {
     console.error('OpenAI image generation error:', error);
-    return NextResponse.json({ image: '/shark.jpg', error: 'Failed to generate image' }, { status: 500 });
+    return NextResponse.json({ image: '/shark.png', error: 'Failed to generate image' }, { status: 500 });
   }
 }
