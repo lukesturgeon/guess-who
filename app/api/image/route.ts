@@ -28,13 +28,16 @@ export async function GET(req: NextRequest) {
       // Upload to Netlify Blobs
       try {
         const store = getStore('generated-images');
-        const blobUrl = await store.set(filename, base64Data, {
+        await store.set(filename, base64Data, {
           metadata: {
             description: description,
             createdAt: new Date().toISOString()
           }
         });
         
+        // Construct the public URL for the blob
+        const siteUrl = process.env.URL || process.env.DEPLOY_PRIME_URL || 'https://localhost:3000';
+        const blobUrl = `${siteUrl}/.netlify/blobs/serve/store/generated-images/${filename}`;
         return NextResponse.json({ image: blobUrl });
       } catch (blobError) {
         // Fallback for local development - return base64 data URL
