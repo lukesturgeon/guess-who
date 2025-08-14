@@ -25,13 +25,10 @@ export async function GET(req: NextRequest) {
       // Create a unique filename based on description
       const filename = `${description.replace(/[^a-zA-Z0-9]/g, '_')}_${Date.now()}.png`;
       
-      // Convert base64 to buffer
-      const buffer = Buffer.from(base64Data, 'base64');
-      
       // Upload to Netlify Blobs
       try {
         const store = getStore('generated-images');
-        const blobUrl = await store.set(filename, buffer, {
+        const blobUrl = await store.set(filename, base64Data, {
           metadata: {
             description: description,
             createdAt: new Date().toISOString()
