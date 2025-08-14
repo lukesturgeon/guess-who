@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
-import fs from 'fs';
-import path from 'path';
+import { getStore } from '@netlify/blobs';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -25,22 +24,27 @@ export async function GET(req: NextRequest) {
       
       // Create a unique filename based on description
       const filename = `${description.replace(/[^a-zA-Z0-9]/g, '_')}_${Date.now()}.png`;
-      const publicDir = path.join(process.cwd(), 'public', 'generated');
       
-      // Ensure the generated directory exists
-      if (!fs.existsSync(publicDir)) {
-        fs.mkdirSync(publicDir, { recursive: true });
-      }
-      
-      const filePath = path.join(publicDir, filename);
-      
-      // Write the base64 data to a file
+      // Convert base64 to buffer
       const buffer = Buffer.from(base64Data, 'base64');
-      fs.writeFileSync(filePath, buffer);
       
-      // Return the local path to the saved image
-      const imageUrl = `/generated/${filename}`;
-      return NextResponse.json({ image: imageUrl });
+      // Upload to Netlify Blobs
+      try {
+        const store = getStore('generated-images');
+        const blobUrl = await store.set(filename, buffer, {
+          metadata: {
+            description: description,
+            createdAt: new Date().toISOString()
+          }
+        });
+        
+        return NextResponse.json({ image: blobUrl });
+      } catch (blobError) {
+        // Fallback for local development - return base64 data URL
+        console.warn('Netlify Blobs not available, using data URL fallback:', blobError);
+        const dataUrl = `data:image/png;base64,${base64Data}`;
+        return NextResponse.json({ image: dataUrl });
+      }
     } else {
       throw new Error('Failed to generate image');
     }

@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@netlify/blobs": "^10.0.8",
     "@openai/agents": "^0.0.10",
     "next": "15.3.5",
     "openai": "^5.8.2",
