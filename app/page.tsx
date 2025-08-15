@@ -100,6 +100,7 @@ export default function Page() {
               }}
             ></div>
             {selectedCard.image && (
+              <div className="relative size-full rounded-full overflow-hidden">
               <Image
                 width={512}
                 height={512}
@@ -109,9 +110,10 @@ export default function Page() {
                   filter: `blur(${showAnimalCard ? 0 : blurAmount}px)`,
                   opacity: imageLoaded ? 1 : 0
                 }}
-                className="w-full h-full object-cover rounded-full absolute top-0 left-0 z-10 duration-500 transition-all overflow-hidden"
+                className="w-full h-full object-cover rounded-full absolute top-0 left-0 z-10 duration-500 transition-all"
                 onLoad={() => setImageLoaded(true)}
               />
+              </div>
             )}
           </div>
           <div className="text-center">
