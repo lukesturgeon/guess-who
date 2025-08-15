@@ -12,7 +12,7 @@ export default function Page() {
   const audioRef = useRef<HTMLAudioElement>(null);
 
   // Use FFT hook for voice indicator scaling
-  const voiceScale = useFFT(audioRef, { minScale: 1.0, maxScale: 1.3 });
+  const voiceScale = useFFT(audioRef, { minScale: 1.0, maxScale: 1.2 });
 
   // WebRTC & AI Chat
   const tools = {
@@ -82,7 +82,7 @@ export default function Page() {
 
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-white p-12">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[#EADEC4] p-12">
       <audio ref={audioRef} />
       {animalCardError && (
         <div className="my-12 text-red-500 text-center">{animalCardError}</div>
@@ -92,7 +92,7 @@ export default function Page() {
       )}
       {selectedCard ? (
         <>
-          <div className="w-[512px] h-[512px] relative rounded-full">
+          <div className="size-[var(--circle-size)] relative rounded-full">
             <div
               className={`absolute top-0 left-0 size-full rounded-full z-0 transition-colors duration-500 pointer-events-none bg-orange-500`}
               style={{
@@ -120,7 +120,7 @@ export default function Page() {
 
             {!isConnected && (
               <button
-                className="bg-amber-200 px-4 py-2 rounded-full mt-2 text-orange-500"
+                className="bg-white px-4 py-2 rounded-full mt-2 text-orange-500"
                 onClick={handleStart}
               >
                 Play again
@@ -129,7 +129,7 @@ export default function Page() {
 
             {isConnected && (
               <button
-                className="bg-amber-200 px-4 py-2 rounded-full mt-2 text-orange-500"
+                className="bg-white px-4 py-2 rounded-full mt-2 text-orange-500"
                 onClick={handleStop}
               >
                 Stop
@@ -138,7 +138,7 @@ export default function Page() {
           </div>
         </>
       ) : (
-        <div className="w-[512px] h-[512px] flex items-center justify-center rounded-full bg-orange-500 animate-pulse cursor-pointer" onClick={handleStart}>
+        <div className="size-[var(--circle-size)] flex items-center justify-center rounded-full bg-orange-500 animate-pulse cursor-pointer" onClick={handleStart}>
           <span className="text-3xl text-white">Start</span>
         </div>
       )}

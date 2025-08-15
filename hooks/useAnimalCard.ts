@@ -29,10 +29,10 @@ const ANIMAL_NAMES = [
 ];
 
 const ANIMAL_SCENARIOS = [
-    "jumping out of an airplane",
+    "jumping out of an airplane with a parachute",
     "landing on the moon",
     "riding a skateboard",
-    "eating a giant ice cream",
+    "eating an oversized giant ice cream",
     "playing video games",
     "surfing a huge wave",
     "having a tea party",
