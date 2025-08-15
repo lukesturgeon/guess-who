@@ -20,6 +20,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+        {/* Add other meta tags or links here if needed */}
+      </head>
       <body
         className={`${fredoka.variable} antialiased`}
       >

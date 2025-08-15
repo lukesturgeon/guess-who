@@ -43,7 +43,7 @@ export default function Page() {
   const { isConnected, error: webRTCError, startWebRTCConnection, stopWebRTCConnection } = useWebRTC(tools, audioRef);
 
   // Blur logic
-  const INITIAL_BLUR = 20;
+  const INITIAL_BLUR = 30;
   const BLUR_STEP = 4;
   const MIN_BLUR = 0;
   const [blurAmount, setBlurAmount] = useState<number>(INITIAL_BLUR);
