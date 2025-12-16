@@ -41,6 +41,7 @@ export default function Page() {
     },
   };
   const { isConnected, error: webRTCError, startWebRTCConnection, stopWebRTCConnection } = useWebRTC(tools, audioRef);
+  const [connecting, setConnecting] = useState(false);
 
   // Blur logic
   const INITIAL_BLUR = 30;
@@ -64,18 +65,21 @@ export default function Page() {
     setShowAnimalCard(false);
     setBlurAmount(INITIAL_BLUR);
     const card = generateCardWithImage();
+    setConnecting(true);
     startWebRTCConnection(card.description);
   };
 
   const handleStop = () => {
     setShowAnimalCard(true);
     setBlurAmount(MIN_BLUR);
+    setConnecting(false);
     stopWebRTCConnection();
   };
 
   useEffect(() => {
     // Cleanup if needed
     return () => {
+      setConnecting(false);
       stopWebRTCConnection();
     };
   }, []);
@@ -122,10 +126,15 @@ export default function Page() {
 
             {!isConnected && (
               <button
-                className="bg-white px-4 py-2 rounded-full mt-2 text-orange-500"
+                className="bg-white px-4 py-2 rounded-full mt-2 text-orange-500 disabled:opacity-75 disabled:cursor-not-allowed flex items-center justify-center min-w-[80px] mx-auto"
                 onClick={handleStart}
+                disabled={connecting}
               >
-                Play again
+                {connecting ? (
+                  <span className="inline-block w-5 h-5 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" aria-label="Loading" />
+                ) : (
+                  'Play again'
+                )}
               </button>
             )}
 

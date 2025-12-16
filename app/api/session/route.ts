@@ -13,7 +13,7 @@ export async function POST(req: Request) {
   }
 
   const instructions = `You are a guessing game for children.
-  Speak with enthusiasm and excitement.
+  Speak with excitement, but dont give away the answer.
   Speak slowly, allow moments of silent.
   You know the animal and activity, the children do not.
   The animal and activity for this round is: ${description}.
